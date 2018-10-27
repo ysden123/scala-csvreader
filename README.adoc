@@ -1,0 +1,69 @@
+= scala-csvreader
+
+Scala CSV file (stream) reader
+
+== Build status
+
+Master: image:https://travis-ci.org/ysden123/scala-csvreader.svg?branch=master[Build Status: master,link=https://travis-ci.org/ysden123/scala-csvreader]
+
+Develop: image:https://travis-ci.org/ysden123/scala-csvreader.svg?branch=develop[Build Status: develop,link=https://travis-ci.org/ysden123/scala-csvreader]
+
+== CsvReader
+
+CsvReader is simple CSV file reader with pure Scala.
+
+The reader supports:
+
+* arbitrary case class for record data
+* file with or without header line
+* setting either continue or stop after error during parsing a record
+* setting different delimiter character
+* error handling
+* record handling
+
+== Usage
+=== Record Data Class
+Record data class is a case class. For example:
+[source,scala]
+----
+case class TestData1(i: Int, s: String, d: Double)
+----
+Some parameters may be Option, For example
+[source,scala]
+----
+case class TestData2(i: Int, s: Option[String], d: Double) {
+  def this(params: Seq[String]) {
+    this(params(0).toInt,
+      if (params(1).isEmpty)
+        None
+      else
+        Some(params(1)),
+      params(2).toDouble
+    )
+  }
+}
+----
+Note in this case the auxiliary constructor should be defined!
+
+== How to work with CsvReader
+[source,scala]
+----
+    def recordHandler(record:TestData]:Unit={
+    ...
+    }
+
+    def errorHandler(error:String]:Unit={
+    ...
+    }
+
+    CsvReader.reader[TestData](Source.fromFile("data.csv"), recordHandler, errorHandler)
+      .parse()
+----
+
+Use modificators:
+
+* withDelimiter
+* withContinueOnError
+* withHeaderLine
+
+
