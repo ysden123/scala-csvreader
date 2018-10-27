@@ -22,7 +22,9 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
   private var errorHandler: String => Unit = _
   private var optionConstructor: Option[Constructor[_]] = _
   private var constructor: Constructor[_] = _
-  private var delimiter: Char = _
+  private var delimiter: Char = CsvReader.DEFAULT_DELIMITER
+  private var continueOnError = true
+  private var hasHeaderLine = false
 
   /**
     * Specifies a delimiter. Default value is comma.
@@ -36,26 +38,54 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
   }
 
   /**
+    * Specifies either continue on error or stop. Default value is true.
+    *
+    * @param continueOnError either continue (true) on error or stop (false). Default value is true.
+    * @return CsvReader
+    */
+  def withContinueOnError(continueOnError: Boolean): CsvReader[T] = {
+    this.continueOnError = continueOnError
+    this
+  }
+
+  /**
+    * Specifies whether source has header line. Default value is false.
+    *
+    * @param hasHeaderLine whether source has header line.
+    * @return CsvReader
+    */
+  def withHeaderLine(hasHeaderLine: Boolean): CsvReader[T] = {
+    this.hasHeaderLine = hasHeaderLine
+    this
+  }
+
+  /**
     * Parses source. Calls recordHeader for each record. Calls errorHandler for each error in parsing.
     */
   def parse(): Unit = {
     val splitExpression = delimiter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)"
     val iterator = source.getLines()
-    while (iterator.hasNext) {
+    var continue = true
+    var counter: Int = 0
+    while (continue && iterator.hasNext) {
       val line = iterator.next()
-      parseLine(line
-        .split(splitExpression)
-        .map(_.trim)
-        .map(field =>
-          if (field.startsWith("\"") && field.endsWith("\""))
-            field.substring(1, field.length - 1)
-          else
-            field
-        )
-      ) match {
-        case Success(t: T) => recordHandler(t)
-        case Failure(exception) =>
-          errorHandler(s"Failed parse [$line]. Error: ${exception.getMessage}")
+      counter += 1
+      if (!(hasHeaderLine && counter == 1)) {
+        parseLine(line
+          .split(splitExpression)
+          .map(_.trim)
+          .map(field =>
+            if (field.startsWith("\"") && field.endsWith("\""))
+              field.substring(1, field.length - 1)
+            else
+              field
+          )
+        ) match {
+          case Success(t: T) => recordHandler(t)
+          case Failure(exception) =>
+            continue = continueOnError
+            errorHandler(s"Failed parse [$line]. Error: ${exception.getMessage}")
+        }
       }
     }
   }
@@ -112,7 +142,6 @@ object CsvReader {
                (implicit classTag: ClassTag[T]): CsvReader[T] = {
     val reader = new CsvReader[T]()
     reader.source = source
-    reader.delimiter = DEFAULT_DELIMITER
     reader.recordHandler = recordHandler
     reader.errorHandler = errorHandler
 

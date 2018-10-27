@@ -161,4 +161,72 @@ class CsvReaderTest extends FunSuite with Matchers {
       errorHandler
     ) should not be null
   }
+
+  test("do not stop on error") {
+    var errorCount = 0
+    var recordCount = 0
+
+    def recordHandler(record: TestData1): Unit = {
+      recordCount += 1
+    }
+
+    def errorHandler(err: String): Unit = {
+      errorCount += 1
+    }
+
+    CsvReader.reader[TestData1](Source.fromResource("test-data4.csv"),
+      recordHandler,
+      errorHandler
+    )
+      .parse()
+
+    errorCount shouldBe 1
+    recordCount shouldBe 2
+  }
+
+  test("stop on error") {
+    var errorCount = 0
+    var recordCount = 0
+
+    def recordHandler(record: TestData1): Unit = {
+      recordCount += 1
+    }
+
+    def errorHandler(err: String): Unit = {
+      errorCount += 1
+    }
+
+    CsvReader.reader[TestData1](Source.fromResource("test-data4.csv"),
+      recordHandler,
+      errorHandler
+    )
+      .withContinueOnError(false)
+      .parse()
+
+    errorCount shouldBe 1
+    recordCount shouldBe 1
+  }
+
+  test("with header line") {
+    var errorCount = 0
+    var recordCount = 0
+
+    def recordHandler(record: TestData1): Unit = {
+      recordCount += 1
+    }
+
+    def errorHandler(err: String): Unit = {
+      errorCount += 1
+    }
+
+    CsvReader.reader[TestData1](Source.fromResource("test-data5.csv"),
+      recordHandler,
+      errorHandler
+    )
+      .withHeaderLine(true)
+      .parse()
+
+    errorCount shouldBe 0
+    recordCount shouldBe 3
+  }
 }
