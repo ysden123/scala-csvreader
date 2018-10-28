@@ -65,5 +65,31 @@ Use modificators:
 * withDelimiter
 * withContinueOnError
 * withHeaderLine
+* withCustomTransformer
+
+== How to work with custom transformer
+Custom transformer allows to customize creating an object.
+
+recordHandler method should be called for each created object.
+
+errorHandler method should be called for each error during creating object.
+
+Example:
+[source,scala]
+----
+    def transformer(line: Seq[String], recordHandler: TestData1 => Unit, errorHandler: String => Unit): TestData1 = {
+        try {
+          val data = TestData1(333, "test", 77.12)
+          recordHandler(data)
+          data
+        } catch {
+          case e: Exception =>
+            errorHandler(e.getMessage)
+            throw e
+       }
+    }
+----
+
+See CsvReaderTest test("customTransformer") and test("customTransformer with error")
 
 

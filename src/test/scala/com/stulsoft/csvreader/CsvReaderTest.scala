@@ -229,4 +229,46 @@ class CsvReaderTest extends FunSuite with Matchers {
     errorCount shouldBe 0
     recordCount shouldBe 3
   }
+
+  test("customTransformer") {
+    def transformer(line: Seq[String], recordHandler: TestData1 => Unit, errorHandler: String => Unit): TestData1 = {
+      try {
+        val data = TestData1(333, "test", 77.12)
+        recordHandler(data)
+        data
+      } catch {
+        case e: Exception =>
+          errorHandler(e.getMessage)
+          throw e
+      }
+    }
+
+    CsvReader.reader[TestData1](Source.fromString(""),
+      r => println(r),
+      e => println(s"Error: $e")
+    )
+      .withCustomTransformer(transformer)
+      .parseLine(Seq("00", "ttt", "999"))
+
+  }
+
+  test("customTransformer with error") {
+    def transformer(line: Seq[String], recordHandler: TestData1 => Unit, errorHandler: String => Unit): TestData1 = {
+      try {
+        throw new RuntimeException("Test exception")
+      } catch {
+        case e: Exception =>
+          errorHandler(e.getMessage)
+          throw e
+      }
+    }
+
+    CsvReader.reader[TestData1](Source.fromString(""),
+      r => println(r),
+      e => println(s"Error: $e")
+    )
+      .withCustomTransformer(transformer)
+      .parseLine(Seq("00", "ttt", "999"))
+
+  }
 }
