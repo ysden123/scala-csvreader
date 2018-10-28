@@ -25,6 +25,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
   private var delimiter: Char = CsvReader.DEFAULT_DELIMITER
   private var continueOnError = true
   private var hasHeaderLine = false
+  private var customTransformer: (Seq[String], T => Unit, String => Unit) => T = _
 
   /**
     * Specifies a delimiter. Default value is comma.
@@ -56,6 +57,23 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
     */
   def withHeaderLine(hasHeaderLine: Boolean): CsvReader[T] = {
     this.hasHeaderLine = hasHeaderLine
+    this
+  }
+
+  /**
+    * Specifies a customer transformer.
+    *
+    * First parameter is collection of the strings (CSV record line).
+    *
+    * Second parameter is record handler, should be called after creating T object.
+    *
+    * Third parameter is error handler, should be called in case any error was occurred during creating T object.
+    *
+    * @param customTransformer the customer transformer which converts line into T
+    * @return CsvReader
+    */
+  def withCustomTransformer(customTransformer: (Seq[String], T => Unit, String => Unit) => T): CsvReader[T] = {
+    this.customTransformer = customTransformer
     this
   }
 
@@ -99,7 +117,9 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
     */
   def parseLine(fields: Seq[String])(implicit classTag: ClassTag[T]): Try[T] = {
     Try {
-      if (constructor.getParameterTypes.exists(pt => pt.getName == "scala.Option")) {
+      if (customTransformer != null) {
+        customTransformer(fields, recordHandler, errorHandler)
+      } else if (constructor.getParameterTypes.exists(pt => pt.getName == "scala.Option")) {
         optionConstructor.get.newInstance(fields).asInstanceOf[T]
       } else {
         val fieldsWithTypes = fields.zip(constructor.getParameterTypes)
