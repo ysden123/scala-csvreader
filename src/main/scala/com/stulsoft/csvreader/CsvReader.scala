@@ -6,6 +6,9 @@ package com.stulsoft.csvreader
 
 import java.lang.reflect.Constructor
 
+import com.typesafe.scalalogging.LazyLogging
+
+import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -16,7 +19,7 @@ import scala.util.{Failure, Success, Try}
   * @param classTag the data type
   * @tparam T the data type
   */
-class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
+class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging {
   private var source: Source = _
   private var recordHandler: T => Unit = _
   private var errorHandler: String => Unit = _
@@ -81,6 +84,10 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
     * Parses source. Calls recordHeader for each record. Calls errorHandler for each error in parsing.
     */
   def parse(): Unit = {
+    makeParse(recordHandler)
+  }
+
+  private def makeParse(theRecordHandler: T => Unit): Unit = {
     val splitExpression = delimiter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)"
     val iterator = source.getLines()
     var continue = true
@@ -99,13 +106,32 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
               field
           )
         ) match {
-          case Success(t: T) => recordHandler(t)
+          case Success(t: T) => theRecordHandler(t)
           case Failure(exception) =>
             continue = continueOnError
-            errorHandler(s"Failed parse [$line]. Error: ${exception.getMessage}")
+            val msg=s"Failed parse [$line]. Error: ${exception.getMessage}"
+            logger.error(msg)
+            errorHandler(msg)
         }
       }
     }
+
+  }
+
+  /**
+    * Parses a Source and creates a list of data objects.
+    *
+    * The ''toList''  method does not call recordHandler.
+    *
+    * @return the list of data objects,
+    */
+  def toList: List[T] = {
+    val list = ListBuffer.empty[T]
+
+    def theRecordHandler(t: T): Unit = list += t
+
+    makeParse(theRecordHandler)
+    list.toList
   }
 
   /**
@@ -143,7 +169,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) {
 /**
   * @author Yuriy Stul
   */
-object CsvReader {
+object CsvReader extends LazyLogging {
   private val DEFAULT_DELIMITER = ','
 
   /**
@@ -187,8 +213,11 @@ object CsvReader {
 
     // validate constructors
     if (reader.constructor.getParameterTypes.exists(pt => pt.getName == "scala.Option")
-      && reader.optionConstructor.isEmpty)
-      throw new RuntimeException(s"Constructor for Option parameter(s), for ${classTag.runtimeClass.getName} class is not defined ")
+      && reader.optionConstructor.isEmpty) {
+      val msg=s"Constructor for Option parameter(s), for ${classTag.runtimeClass.getName} class is not defined "
+      logger.error(s"Constructor for Option parameter(s), for ${classTag.runtimeClass.getName} class is not defined ")
+      throw new RuntimeException(msg)
+    }
 
     reader
   }

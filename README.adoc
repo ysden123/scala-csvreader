@@ -60,6 +60,15 @@ Note in this case the auxiliary constructor should be defined!
       .parse()
 ----
 
+or
+[source,scala]
+----
+    // Empty record handler
+    def handler(testData: TestData1): Unit = {}
+
+    val list = CsvReader.reader[TestData1](Source.fromResource("test-data1.csv"), handler, errorHandler).toList
+----
+
 Use modificators:
 
 * withDelimiter

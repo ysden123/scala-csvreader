@@ -269,6 +269,17 @@ class CsvReaderTest extends FunSuite with Matchers {
     )
       .withCustomTransformer(transformer)
       .parseLine(Seq("00", "ttt", "999"))
+  }
+
+  test("toList") {
+    // Empty record handler
+    def handler(testData: TestData1): Unit = {}
+
+    val list = CsvReader.reader[TestData1](Source.fromResource("test-data1.csv"), handler, errorHandler).toList
+
+    list.length shouldBe 3
+
+    list.foreach(println)
 
   }
 }
