@@ -6,6 +6,7 @@ package com.stulsoft.csvreader
 
 import java.lang.reflect.Constructor
 
+import com.stulsoft.Commons
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ListBuffer
@@ -25,7 +26,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
   private var errorHandler: String => Unit = _
   private var optionConstructor: Option[Constructor[_]] = _
   private var constructor: Constructor[_] = _
-  private var delimiter: Char = CsvReader.DEFAULT_DELIMITER
+  private var delimiter: Char = Commons.DEFAULT_DELIMITER
   private var continueOnError = true
   private var hasHeaderLine = false
   private var customTransformer: (Seq[String], T => Unit, String => Unit) => T = _
@@ -88,7 +89,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
   }
 
   private def makeParse(theRecordHandler: T => Unit): Unit = {
-    val splitExpression = delimiter + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)"
+    val splitExpression = delimiter  + Commons.DELIMITER_REG_EXPRESSION
     val iterator = source.getLines()
     var continue = true
     var counter: Int = 0
@@ -170,8 +171,6 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
   * @author Yuriy Stul
   */
 object CsvReader extends LazyLogging {
-  private val DEFAULT_DELIMITER = ','
-
   /**
     * Creates a new instance of the CsvReader.
     *
