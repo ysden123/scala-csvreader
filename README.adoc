@@ -10,7 +10,7 @@ Develop: image:https://travis-ci.org/ysden123/scala-csvreader.svg?branch=develop
 
 == CsvReader
 
-CsvReader is simple CSV file reader with pure Scala.
+CsvReader is simple CSV reader with pure Scala.
 
 The reader supports:
 
@@ -45,7 +45,7 @@ case class TestData2(i: Int, s: Option[String], d: Double) {
 ----
 Note in this case the auxiliary constructor should be defined!
 
-== How to work with CsvReader
+=== How to work with CsvReader
 [source,scala]
 ----
     def recordHandler(record:TestData]:Unit={
@@ -69,14 +69,14 @@ or
     val list = CsvReader.reader[TestData1](Source.fromResource("test-data1.csv"), handler, errorHandler).toList
 ----
 
-Use modificators:
+=== Use of modificators:
 
 * withDelimiter
 * withContinueOnError
 * withHeaderLine
 * withCustomTransformer
 
-== How to work with custom transformer
+=== How to work with custom transformer
 Custom transformer allows to customize creating an object.
 
 recordHandler method should be called for each created object.
@@ -101,4 +101,92 @@ Example:
 
 See CsvReaderTest test("customTransformer") and test("customTransformer with error")
 
+== CsvStreamReader
 
+CsvStreamReader is CSV reader with using the Akka stream.
+
+The reader supports:
+
+* arbitrary case class for record data
+* file with or without header line
+* setting either continue or stop after error during parsing a record
+* setting different delimiter character
+* error handling
+* record handling
+
+== Usage
+=== Record Data Class
+Record data class is a case class. For example:
+[source,scala]
+----
+case class TestData1(i: Int, s: String, d: Double)
+----
+Some parameters may be Option, For example
+[source,scala]
+----
+case class TestData2(i: Int, s: Option[String], d: Double) {
+  def this(params: Seq[String]) {
+    this(params(0).toInt,
+      if (params(1).isEmpty)
+        None
+      else
+        Some(params(1)),
+      params(2).toDouble
+    )
+  }
+}
+----
+Note in this case the auxiliary constructor should be defined!
+
+=== How to work with CsvStreamReader
+[source,scala]
+----
+ def recordHandler(record:TestData]:Unit={
+  ...
+ }
+
+ def errorHandler(error:String]:Unit={
+ ...
+ }
+
+ implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
+ implicit val materializer: ActorMaterializer = ActorMaterializer()
+
+ val reader = CsvStreamReader.reader(Source.fromResource("test-data1.csv"), recordHandler, errorHandler)
+
+ Await.ready(reader.run(), Duration.Inf)
+ source.close()
+ actorSystem.terminate()
+----
+
+=== How to get list of items
+[source,scala]
+----
+
+ def errorHandler(error:String]:Unit={
+ ...
+ }
+
+ implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
+ implicit val materializer: ActorMaterializer = ActorMaterializer()
+ val list = ListBuffer.empty[TestData1]
+
+ val reader = CsvStreamReader.reader(Source.fromResource("test-data1.csv"),
+    item => list += item,
+    errorHandler)
+
+ Await.ready(reader.run(), Duration.Inf)
+ println(s"list.length=${list.length}")
+ source.close()
+ actorSystem.terminate()
+----
+
+=== Use of modificators:
+
+* withDelimiter
+* withContinueOnError
+* withHeaderLine
+* withCustomTransformer
+
+=== How to work with custom transformer
+See "How to work with custom transformer" for CsvReader (above)

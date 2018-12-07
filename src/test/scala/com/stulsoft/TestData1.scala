@@ -2,7 +2,7 @@
  * Copyright (c) 2018. Yuriy Stul
  */
 
-package com.stulsoft.csvreader
+package com.stulsoft
 
 /**
   * @author Yuriy Stul

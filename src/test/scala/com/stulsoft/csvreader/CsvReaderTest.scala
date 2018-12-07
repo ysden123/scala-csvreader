@@ -7,6 +7,7 @@
   */
 package com.stulsoft.csvreader
 
+import com.stulsoft.{TestData1, TestData2, TestData3}
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.io.Source
