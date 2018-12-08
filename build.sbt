@@ -7,8 +7,8 @@ lazy val akkaStreamVersion = "2.5.18"
 
 lazy val commonSettings = Seq(
   organization := "com.stulsoft",
-  version := "1.0.0",
-  scalaVersion := "2.12.7",
+  version := "1.0.1",
+  scalaVersion := "2.12.8",
   scalacOptions ++= Seq(
     "-feature",
     "-language:implicitConversions",
