@@ -146,10 +146,7 @@ class CsvStreamReader[T] private()(implicit classTag: ClassTag[T]) extends LazyL
     * @return Future[Done]
     */
   def run()(implicit materializer: Materializer): Future[Done] = {
-    source.prefixAndTail(if (hasHeaderLine) 1 else 0)
-      .flatMapConcat { case (_, rest) =>
-        rest
-      }
+    source.drop(if (hasHeaderLine) 1 else 0)
       .takeWhile(_ => continue)
       .via(flow)
       .runWith(sink)
