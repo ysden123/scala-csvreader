@@ -37,7 +37,7 @@ class CsvStreamReader[T] private()(implicit classTag: ClassTag[T]) extends LazyL
   private var continueOnError = true
   private var hasHeaderLine = false
   private var customTransformer: (Seq[String], T => Unit, String => Unit) => T = _
-  private lazy val splitExpression = delimiter + Commons.DELIMITER_REG_EXPRESSION
+  private lazy val splitExpression = s"$delimiter${Commons.DELIMITER_REG_EXPRESSION}"
   private var continue = true
 
   /**
@@ -91,14 +91,15 @@ class CsvStreamReader[T] private()(implicit classTag: ClassTag[T]) extends LazyL
   }
 
   def parseLine(line: String): Try[T] = {
-    convertFieldsToT(line.split(splitExpression)
+    val fields = line.split(splitExpression)
       .map(_.trim)
       .map(field =>
         if (field.startsWith("\"") && field.endsWith("\""))
           field.substring(1, field.length - 1)
         else
           field
-      )) match {
+      ).toIndexedSeq
+    convertFieldsToT(fields) match {
       case Success(data) => Success(data)
       case Failure(exception) =>
         val msg = s"Failed parse [$line]. Error: ${exception.getMessage}"
