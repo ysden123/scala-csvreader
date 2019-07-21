@@ -89,7 +89,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
   }
 
   private def makeParse(theRecordHandler: T => Unit): Unit = {
-    val splitExpression = delimiter + Commons.DELIMITER_REG_EXPRESSION
+    val splitExpression = s"$delimiter${Commons.DELIMITER_REG_EXPRESSION}"
     val iterator = source.getLines()
     var continue = true
     var counter: Int = 0
@@ -97,7 +97,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
       val line = iterator.next()
       counter += 1
       if (!(hasHeaderLine && counter == 1)) {
-        parseLine(line
+        val fields = line
           .split(splitExpression)
           .map(_.trim)
           .map(field =>
@@ -105,8 +105,8 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
               field.substring(1, field.length - 1)
             else
               field
-          )
-        ) match {
+          ).toIndexedSeq
+        parseLine(fields) match {
           case Success(t: T) => theRecordHandler(t)
           case Failure(exception) =>
             continue = continueOnError
