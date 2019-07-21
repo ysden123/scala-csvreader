@@ -89,7 +89,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
   }
 
   private def makeParse(theRecordHandler: T => Unit): Unit = {
-    val splitExpression = delimiter  + Commons.DELIMITER_REG_EXPRESSION
+    val splitExpression = delimiter + Commons.DELIMITER_REG_EXPRESSION
     val iterator = source.getLines()
     var continue = true
     var counter: Int = 0
@@ -110,7 +110,7 @@ class CsvReader[T] private()(implicit classTag: ClassTag[T]) extends LazyLogging
           case Success(t: T) => theRecordHandler(t)
           case Failure(exception) =>
             continue = continueOnError
-            val msg=s"Failed parse [$line]. Error: ${exception.getMessage}"
+            val msg = s"Failed parse [$line]. Error: ${exception.getMessage}"
             logger.error(msg)
             errorHandler(msg)
         }
@@ -200,7 +200,7 @@ object CsvReader extends LazyLogging {
         Some(
           constructors
             .filter(ctor => ctor.getParameterCount == 1
-              && ctor.getParameterTypes.head.getName == "scala.collection.Seq")
+              && ctor.getParameterTypes.head.getName == "scala.collection.immutable.Seq")
             .head)
     }
 
@@ -213,7 +213,7 @@ object CsvReader extends LazyLogging {
     // validate constructors
     if (reader.constructor.getParameterTypes.exists(pt => pt.getName == "scala.Option")
       && reader.optionConstructor.isEmpty) {
-      val msg=s"Constructor for Option parameter(s), for ${classTag.runtimeClass.getName} class is not defined "
+      val msg = s"Constructor for Option parameter(s), for ${classTag.runtimeClass.getName} class is not defined "
       logger.error(s"Constructor for Option parameter(s), for ${classTag.runtimeClass.getName} class is not defined ")
       throw new RuntimeException(msg)
     }
