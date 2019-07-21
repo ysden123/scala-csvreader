@@ -182,7 +182,7 @@ object CsvStreamReader extends LazyLogging {
         Some(
           constructors
             .filter(ctor => ctor.getParameterCount == 1
-              && ctor.getParameterTypes.head.getName == "scala.collection.Seq")
+              && ctor.getParameterTypes.head.getName == "scala.collection.immutable.Seq")
             .head)
     }
 
