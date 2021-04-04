@@ -4,13 +4,12 @@
 
 package com.stulsoft.csvstreamreader
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.stulsoft.TestData1
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
+import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -19,7 +18,7 @@ import scala.io.Source
 /**
   * @author Yuriy Stul
   */
-class CsvStreamReaderTest extends FunSuite with Matchers {
+class CsvStreamReaderTest extends AnyFunSuite with Matchers {
 
   test("create instance of CsvStreamReader") {
     def recordHandler(data: TestData1): Unit = {}
@@ -34,7 +33,6 @@ class CsvStreamReaderTest extends FunSuite with Matchers {
 
   test("read correct CSV file") {
     implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val counter = new AtomicInteger
 
     def recordHandler(data: TestData1): Unit = counter.getAndIncrement()
@@ -53,7 +51,6 @@ class CsvStreamReaderTest extends FunSuite with Matchers {
 
   test("read incorrect CSV file") {
     implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val counter = new AtomicInteger
 
     def recordHandler(data: TestData1): Unit = counter.getAndIncrement()
@@ -72,7 +69,6 @@ class CsvStreamReaderTest extends FunSuite with Matchers {
 
   test("read incorrect CSV file without continue on error") {
     implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val counter = new AtomicInteger
 
     def recordHandler(data: TestData1): Unit = counter.getAndIncrement()
@@ -92,7 +88,6 @@ class CsvStreamReaderTest extends FunSuite with Matchers {
 
   test("customTransformer") {
     implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val counter = new AtomicInteger
 
     def transformer(line: Seq[String], recordHandler: TestData1 => Unit, errorHandler: String => Unit): TestData1 = {
@@ -121,7 +116,6 @@ class CsvStreamReaderTest extends FunSuite with Matchers {
 
   test("customTransformer with error") {
     implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val counter = new AtomicInteger
     def transformer(line: Seq[String], recordHandler: TestData1 => Unit, errorHandler: String => Unit): TestData1 = {
       try {
@@ -148,7 +142,6 @@ class CsvStreamReaderTest extends FunSuite with Matchers {
 
   test("with header line") {
     implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val counter = new AtomicInteger
 
     val source = Source.fromResource("test-data5.csv")
@@ -165,7 +158,6 @@ class CsvStreamReaderTest extends FunSuite with Matchers {
 
   test("toList"){
     implicit val actorSystem: ActorSystem = ActorSystem("CsvStreamReaderTest")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
     val list = ListBuffer.empty[TestData1]
 
     val source = Source.fromResource("test-data5.csv")

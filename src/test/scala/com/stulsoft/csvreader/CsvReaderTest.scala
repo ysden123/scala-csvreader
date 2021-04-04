@@ -8,12 +8,13 @@
 package com.stulsoft.csvreader
 
 import com.stulsoft.{TestData1, TestData2, TestData3}
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 import scala.io.Source
 import scala.util.{Failure, Success}
 
-class CsvReaderTest extends FunSuite with Matchers {
+class CsvReaderTest extends AnyFunSuite with Matchers {
 
   test("parseLine") {
     val i = 123

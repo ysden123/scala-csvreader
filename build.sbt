@@ -1,14 +1,14 @@
-lazy val scalaTestVersion = "3.0.8"
-lazy val scalaCheckVersion = "1.14.0"
-lazy val scalaMockVersion = "4.3.0"
-lazy val scalaLoggingVersion = "3.9.2"
+lazy val scalaTestVersion = "3.2.7"
+lazy val scalaCheckVersion = "1.15.3"
+lazy val scalaMockVersion = "5.1.0"
+lazy val scalaLoggingVersion = "3.9.3"
 lazy val logbackVersion = "1.2.3"
-lazy val akkaStreamVersion = "2.5.23"
+lazy val akkaStreamVersion = "2.6.13"
 
 lazy val commonSettings = Seq(
   organization := "com.stulsoft",
   version := "1.1.1",
-  scalaVersion := "2.13.0",
+  scalaVersion := "2.13.5",
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation",

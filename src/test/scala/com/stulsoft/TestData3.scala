@@ -8,7 +8,7 @@ package com.stulsoft
   * @author Yuriy Stul
   */
 case class TestData3(i: Option[Int], s: Option[String], d: Option[Double]) {
-  def this(params: Seq[String]) {
+  def this(params: Seq[String]) = {
     this(
       if (params(0).isEmpty) None else Some(params(0).toInt),
       if (params(1).isEmpty) None else Some(params(1)),
